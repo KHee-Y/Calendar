@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'GmarketSans';
+    src: url('/src/fonts/GmarketSansOTF/GmarketSansMedium.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Gmarket Sans Light';
+    src: url('/src/fonts/GmarketSansOTF/GmarketSansLight.otf') format('otf'),
+         url('/src/fonts/GmarketSansOTF/GmarketSansLight.otf') format('otf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: 'GmarketSans', sans-serif;
+    font-family: 'Gmarket Sans Light', sans-serif;
+}
