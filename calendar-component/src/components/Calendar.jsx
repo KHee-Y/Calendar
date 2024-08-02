@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { PickersDay } from '@mui/x-date-pickers';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import { Typography, TextField, Box, Modal, Paper } from '@mui/material';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
@@ -48,6 +49,8 @@ export default function ResponsiveDatePickers() {
   const [currentView, setCurrentView] = useState('day');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState([]);
+
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
 
   useEffect(() => {
     try {
@@ -103,13 +106,13 @@ export default function ResponsiveDatePickers() {
   };
 
   const handleIconClick = (type) => {
-    const startOfMonth = currentMonth.startOf('month');
-    const endOfMonth = currentMonth.endOf('month');
+    const startOfYear = selectedDate.startOf('year');
+    const endOfYear = selectedDate.endOf('year');
 
     const content = Object.entries(memos)
       .filter(([date, memo]) => {
         const memoDate = dayjs(date, 'YYYY/MM/DD');
-        return memo[type] && memo[type].length > 0 && memoDate.isBetween(startOfMonth, endOfMonth, null, '[]');
+        return memo[type] && memo[type].length > 0 && memoDate.isBetween(startOfYear, endOfYear, null, '[]');
       })
       .map(([date, memo]) => ({ date, text: memo[type] }));
 
@@ -127,11 +130,11 @@ export default function ResponsiveDatePickers() {
     const isToday = dayjs().isSame(day, 'day');
     const formattedDate = day.format('YYYY/MM/DD');
     const hasMemo = !!memos[formattedDate];
-
+  
     return (
       <Box
         sx={{
-          position: 'relative',
+          position: 'absolute',
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -139,7 +142,7 @@ export default function ResponsiveDatePickers() {
           justifyContent: 'center',
           backgroundColor: isSelected ? 'lightblue' : 'transparent',
           border: isToday ? '2px solid blue' : 'none',
-          borderRadius: '0%',
+          borderRadius: '50%',
           overflow: 'hidden',
         }}
         onClick={() => handleDayClick(day)}
@@ -148,7 +151,7 @@ export default function ResponsiveDatePickers() {
         {hasMemo && (
           <Box
             sx={{
-              position: 'absolute',
+              position: 'relative',
               top: 0,
               right: 0,
               width: '24px',
@@ -184,7 +187,7 @@ export default function ResponsiveDatePickers() {
         <div className="memo-box-container">
           {memos[selectedDate.format('YYYY/MM/DD')] ? (
             <MemoBox
-              date={selectedDate.format('YYYY/MM/DD')}
+              date={selectedDate.format('DD MMM YYYY')}
               memo={memos[selectedDate.format('YYYY/MM/DD')]}
               handleDeleteMemo={handleDeleteMemo}
             />
@@ -196,8 +199,8 @@ export default function ResponsiveDatePickers() {
                 alignItems: 'center',
                 border: '1px solid #ccc',
                 borderRadius: '8px',
-                padding: '42px',
-                marginTop: '8px',
+                padding: '44px',
+                marginTop: '5px',
                 textAlign: 'center',
               }}
             >
@@ -212,7 +215,12 @@ export default function ResponsiveDatePickers() {
             <StaticDatePicker
               displayStaticWrapperAs="desktop"
               value={selectedDate}
-              onChange={(newValue) => handleDayClick(newValue)}
+              onChange={(newValue) => { 
+                if (currentView === 'day') {
+                handleDayClick(newValue);
+              }
+              setSelectedDate(newValue);
+            }}
               onMonthChange={handleMonthChange}
               onYearChange={handleYearChange}
               renderDay={renderDay}
@@ -222,6 +230,30 @@ export default function ResponsiveDatePickers() {
               }}
               slots={{
                 textField: (params) => <TextField {...params} />,
+                day: (date) => {
+                  const formattedDate = date.day.format('YYYY/MM/DD');
+                  const hasMemo = Object.keys(memos).includes(formattedDate);
+                  const hospital = memos[formattedDate]?.hospital?.length;
+                  const medicationTime = memos[formattedDate]?.medicationTime?.length;
+                  const pain = memos[formattedDate]?.pain?.length;
+
+                  return (
+                    <PickersDay {...date}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        {hasMemo && (
+                          <Box sx={{ display: 'flex', flexDirection: 'row', position: 'absolute', top: 0, left: '40%', transform: 'translateX(-50%)', mt: -0.5 }}>
+                            {hospital ? <Box sx={{ width: 3.5, height: 3.5, borderRadius: '50%', backgroundColor: 'blue', ml: 0.2 }} /> : null}
+                            {medicationTime ? <Box sx={{ width: 3.5, height: 3.5, borderRadius: '50%', backgroundColor: 'orange', ml: 0.2 }} /> : null}
+                            {pain ? <Box sx={{ width: 3.5, height: 3.5, borderRadius: '50%', backgroundColor: 'red', ml: 0.2 }} /> : null}
+                          </Box>
+                        )}
+                        <Typography variant="body2" sx={{ margin: 'auto', fontSize: '0.875rem' }}>
+                          {date.day.format('D')}
+                        </Typography>
+                      </Box>
+                    </PickersDay>
+                  );
+                }
               }}
               view={currentView}
               onViewChange={(newView) => setCurrentView(newView)}
@@ -262,11 +294,21 @@ export default function ResponsiveDatePickers() {
         </Box>
 
         <Modal open={modalOpen} onClose={handleModalClose}>
-          <Paper style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '20px' }}>
+          <Paper style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '20px', maxHeight: '80vh', overflowY: 'auto' }}>
             {modalContent.map((item, index) => (
               <Box key={index} sx={{ marginBottom: '10px' }}>
                 <Typography variant="h6">{item.date}</Typography>
-                <Typography variant="body1">{item.text}</Typography>
+                {Array.isArray(item.text) ? (
+                  item.text.map((memo, memoIndex) => (
+                    <Typography key={memoIndex} variant="body1" sx={{ marginLeft: '20px' }}>
+                      {memo}
+                    </Typography>
+                  ))
+                ) : (
+                  <Typography variant="body1" sx={{ marginLeft: '20px' }}>
+                    {item.text}
+                  </Typography>
+                )}
               </Box>
             ))}
           </Paper>
