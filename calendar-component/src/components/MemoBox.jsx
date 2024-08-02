@@ -15,11 +15,11 @@ const MemoBox = ({ date, memo, handleDeleteMemo }) => {
     <Box
       mt={0.5}
       display="flex"
-      flexDirection="column"
+      flexDirection="row"
       alignItems="center"
       sx={{
-        height: '95px', 
-        maxHeight: '150px', 
+        height: '100px',
+        maxHeight: '200px', 
         overflow: 'hidden',
         fontSize: '14px',
         border: '1px solid #ccc',
@@ -28,8 +28,8 @@ const MemoBox = ({ date, memo, handleDeleteMemo }) => {
         position: 'relative',
       }}
     >
-      <Box sx={{ position: 'sticky', top: 0, backgroundColor: '#fff', zIndex: 1, paddingBottom: '4px', borderBottom: '1px solid #ccc', width: '100%' }}>
-        <Typography variant="body2" sx={{ fontFamily: 'GmarketSans', textAlign: 'center' }}>
+      <Box sx={{ minWidth: '80px', paddingRight: '8px', borderRight: '1px solid #ccc' }}>
+        <Typography variant="body2" sx={{ fontFamily: 'GmarketSans', textAlign: 'left', fontSize: '0.86em' }}>
           {date}
         </Typography>
       </Box>
@@ -37,13 +37,13 @@ const MemoBox = ({ date, memo, handleDeleteMemo }) => {
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: 'calc(100% - 24px)', // Adjust height for scrollable area
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
         width: '100%',
-        overflowY: 'auto', // Enable vertical scrolling
-        paddingTop: '8px', // Offset for sticky date
-        textAlign: 'center',
+        height: 'calc(100% - 24px)',
+        overflowY: 'auto',
+        paddingLeft: '8px',
+        paddingTop: '12px',
       }}>
         {isEmptyMemo ? (
           <Typography variant="body2" sx={{ fontFamily: 'GmarketSans' }}>
